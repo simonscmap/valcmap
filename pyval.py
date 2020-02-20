@@ -10,7 +10,7 @@ Large datasets will have metadata sheets seperate. Pass flag? 'data' page ignore
 
 import os
 import pandas as pd
-
+import sys
 ####################################
 
 
@@ -47,5 +47,7 @@ def main(path, filename,opt_data_csv = None, split_data=False):
     validate_dataset_metadata(df_dataset_metadata)
     valiate_vars_metadata(df_vars_metadata)
 
+path = os.getcwd()
+filename = sys.argv[0]
 
 main(path, filename,opt_data_csv = None, split_data=False)
