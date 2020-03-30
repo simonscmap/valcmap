@@ -186,7 +186,7 @@ def time_format_validator(df, col, time_format,test_name):
     return time_format_validator_dict
 
 def make_list_validator(df, col,test_name):
-    """Validates the dataset_make column to see if the value is in tblMakes in CMAP. Test function is named: test_make_list_validator() in test_valcmap.py.
+    """Validates the dataset_make column to see if the value is in tblMakes in CMAP. Test function is named: test_time_format_validator() in test_valcmap.py.
 
     Parameters
     ----------
