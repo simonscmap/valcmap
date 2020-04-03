@@ -1,4 +1,5 @@
-## DEVNOTES 02-24-20
+## DEVNOTES 04-01-20
+#Since some dataset metadata cols have multiple rows, iterate funcs through rows and check..
 """
 
 Three main function types:
@@ -80,7 +81,7 @@ def col_name_validator(df,col_name_list, test_name):
 
     header_name_list = list(df.columns)
     if set(header_name_list) == set(col_name_list):
-        msg = column_name_msg
+        msg = ''
         non_matching_vals = ['']
     else:
         msg = 'WARNING: Column headers do not match input column list.'
@@ -93,7 +94,7 @@ def col_name_validator(df,col_name_list, test_name):
         }
     return col_name_validator_dict
 
-def length_validator(df, col, length,test_name, min_length='', suggested_max=''):
+def length_validator(df, col, length,test_name, max_length = '', min_length='', suggested_max=''):
 
     """Validates a length limit for an input column. Test function is named: test_length_validator() in test_valcmap.py.
 
@@ -107,9 +108,11 @@ def length_validator(df, col, length,test_name, min_length='', suggested_max='')
        Max length of values allowed in column.
     test_name : str
        Valdation test name.
+    max_length (optinal) : int
+       Maximum length of string
     min_length (optional) : int
        Minimum length of string
-    suggested_max : int
+    suggested_max (optional) : int
        Suggested Max -- if string length is greater then, will recomend to reduce length
 
     Returns
@@ -122,18 +125,38 @@ def length_validator(df, col, length,test_name, min_length='', suggested_max='')
 
     """
 
-    mask = (df[col].astype(str).str.len() >= int(length))
-    masked_series = df[col][mask==True]
-    if masked_series.empty:
-        masked_series = ''
-    if mask.any() == True:
+    if max_length == '':
+        max_len_mask = pd.Series(['False'] * len(df[col]))
+    else:
+        max_len_mask = (df[col].astype(str).str.len() >= int(max_length))
+
+    if min_length == '':
+        min_length_mask = pd.Series(['False'] * len(df[col]))
+    else:
+        min_length_mask = (df[col].astype(str).str.len() < int(min_length))
+
+    if suggested_max == '':
+        suggested_len_mask = pd.Series(['False'] * len(df[col]))
+    else:
+        suggested_len_mask = (df[col].astype(str).str.len() >= int(suggested_max))
+
+
+    if True in max_len_mask: # a True value exists in the series of masked max length
         msg = 'WARNING: Some values are longer then accepted column limits. The character length limit for column: ' +  col + ' is: ' + str(length)  + ' Please modify your data and resubmit.'
-    elif  min_length != '' and df[col].astype(str).str.len().any() >= int(suggested_max):
-        msg += 'WARNING: Some values are longer then suggested length. The suggested character count for : ' +  col + ' is: ' + str(min_length)  + ' If you wish, reduce length.'
-    elif min_length != '' and df[col].astype(str).str.len().any() < int(min_length):
-        msg += 'WARNING: Some values are less then minimum length. Please modify and resubmit.'
+        masked_series = df[col][max_len_mask==True]
+
+    elif True in min_length_mask:
+        msg = 'WARNING: Some values are less then minimum length of: ' + str(min_length) + ' . Please modify and resubmit.'
+        masked_series = df[col][min_length_max==True]
+
+    elif True in suggested_len_mask:
+        msg = 'WARNING: Some values are longer then suggested length. The suggested character count for : ' +  col + ' is: ' + str(min_length)  + ' If you wish, reduce length.'
+        masked_series = df[col][suggested_len_mask==True]
+
     else:
         msg = ''
+        masked_series = ''
+
 
     length_validator_dict = {
         "test_name": test_name,
@@ -184,6 +207,44 @@ def time_format_validator(df, col, time_format,test_name):
         }
 
     return time_format_validator_dict
+
+def climatology_bool_validator(df, col, test_name):
+    """Validates the climatology column to check for 1 or null. Test function is named: test_climatology_bool_validator() in test_valcmap.py.
+
+    Parameters
+    ----------
+    df : pandas dataframe
+       Pandas dataframe containing column to be time format validated.
+    col : str
+       Name of pandas dataframe column to validate.
+    test_name : str
+       Valdation test name.
+
+
+    Returns
+    -------
+    length_validator_dict : dictionary
+        python dictionary containing:
+            test name: str - of test name for output dict
+            error: str - error message
+            non_matching_vals: List - any values in non agreement
+
+    """
+    if df[col].astype(str)[0] ==  '1' or df[col].astype(str)[0] ==  '0':
+        msg = ''
+        non_matching_vals = ''
+    else:
+        msg = 'WARNING: climatology values is not 0 or 1 (0 means dataset is not climatology product, 1 means dataset is climatology product.)'
+        non_matching_vals = str(df[col].astype(str)[0])
+
+    climatology_bool_validator_dict = {
+        "test_name": test_name,
+        "error": msg,
+        "non_matching_vals": non_matching_vals
+        }
+
+    return climatology_bool_validator_dict
+
 
 def make_list_validator(df, col,test_name):
     """Validates the dataset_make column to see if the value is in tblMakes in CMAP. Test function is named: test_time_format_validator() in test_valcmap.py.
@@ -265,6 +326,39 @@ def dataset_make(df):
     dataset_make_list_valdiator = make_list_validator(df, 'dataset_make','dataset metadata: validate dataset make')
     return dataset_make_list_valdiator
 
+def dataset_source(df):
+    dataset_source_length_validator = length_validator(df, 'dataset_source',100,'dataset metadata: validate dataset source length',1)
+    return dataset_source_length_validator
+
+def dataset_distributor(df):
+    dataset_distributor_length_validator = length_validator(df, 'dataset_distributor',100,'dataset metadata: validate dataset distributor length')
+    return dataset_distributor_length_validator
+
+def dataset_acknowledgement(df):
+    dataset_acknowledgement_length_validator = length_validator(df, 'dataset_acknowledgement',100,'dataset metadata: validate dataset acknowledgement length',1)
+    return dataset_acknowledgement_length_validator
+
+def dataset_DOI(df):
+    dataset_DOI_length_validator = length_validator(df, 'dataset_doi',500,'dataset metadata: validate dataset DOI length')
+    return dataset_DOI_length_validator
+
+def dataset_history(df):
+    dataset_history_length_validator = length_validator(df, 'dataset_history',500,'dataset metadata: validate dataset history length')
+    return dataset_history_length_validator
+
+def dataset_description(df):
+    dataset_description_length_validator = length_validator(df, 'dataset_description',10000,'dataset metadata: validate dataset description length',50, 200)
+    return dataset_description_length_validator
+
+def dataset_references(df):
+    dataset_references_length_validator = length_validator(df, 'dataset_references', 500,'dataset metadata: validate dataset reference length')
+    return dataset_references_length_validator
+
+def dataset_climatology(df):
+    dataset_climatology_length_validator = length_validator(df, 'climatology',2,'dataset metadata: validate dataset climatology length')
+    dataset_climatology_bool_check_validator = climatology_bool_validator(df, 'climatology', 'dataset metadata: validate dataset climatology bool values')
+    return dataset_climatology_length_validator, dataset_climatology_bool_check_validator
+
 def validate_dataset_metadata(df):
     #sheet wide validation
     dataset_metadata_col_name_validator = col_name_validator(df,['dataset_short_name','dataset_long_name','dataset_version','dataset_release_date','dataset_make','dataset_source','dataset_distributor','dataset_acknowledgement','dataset_doi','dataset_history','dataset_description','dataset_references','climatology'], 'dataset metadata: validate column names')
@@ -275,8 +369,17 @@ def validate_dataset_metadata(df):
     dataset_version_length_validator_dict = dataset_version(df)
     dataset_release_date_length_validator_dict, dataset_release_date_time_format_validator_dict = dataset_release_date(df)
     dataset_make_validator_dict = dataset_make(df)
+    dataset_source_valdiator_dict = dataset_source(df)
+    dataset_distributor_validator_dict = dataset_distributor(df)
+    dataset_acknowledgement_valdator_dict = dataset_acknowledgement(df)
+    dataset_DOI_validator_dict =  dataset_DOI(df)
+    dataset_history_validator_dict = dataset_history(df)
+    dataset_desciption_validator_dict = dataset_description(df)
+    dataset_references_validator_dict = dataset_references(df)
+    dataset_climatology_length_validator_dict, dataset_climatology_bool_check_validator_dict = dataset_climatology(df)
 
-    return dataset_metadata_col_name_validator,dataset_short_name_dict,dataset_long_name_dict,dataset_version_length_validator_dict,dataset_release_date_length_validator_dict, dataset_release_date_time_format_validator_dict, dataset_make_validator_dict
+    return dataset_metadata_col_name_validator,dataset_short_name_dict,dataset_long_name_dict,dataset_version_length_validator_dict,dataset_release_date_length_validator_dict, dataset_release_date_time_format_validator_dict, dataset_make_validator_dict, dataset_source_valdiator_dict, dataset_distributor_validator_dict, dataset_acknowledgement_valdator_dict, dataset_DOI_validator_dict, dataset_history_validator_dict, dataset_desciption_validator_dict, dataset_references_validator_dict, dataset_climatology_length_validator_dict, dataset_climatology_bool_check_validator_dict
+
 
 def validate_vars_metadata(df):
     pass
@@ -295,12 +398,10 @@ def write_to_csv(dict, fname):
 
 
 def compile_report(fname):
-    write_to_csv(dataset_metadata_col_name_validator,fname)
-    write_to_csv(dataset_short_name_dict,fname)
-    write_to_csv(dataset_long_name_dict,fname)
-    write_to_csv(dataset_version_length_validator_dict,fname)
-    write_to_csv(dataset_release_date_length_validator_dict,fname)
-    write_to_csv(dataset_release_date_time_format_validator_dict,fname)
+    dataset_metadata_list = [dataset_metadata_col_name_validator,dataset_short_name_dict,dataset_long_name_dict,dataset_version_length_validator_dict,dataset_release_date_length_validator_dict, dataset_release_date_time_format_validator_dict, dataset_make_validator_dict, dataset_source_valdiator_dict, dataset_distributor_validator_dict, dataset_acknowledgement_valdator_dict, dataset_DOI_validator_dict, dataset_history_validator_dict, dataset_desciption_validator_dict, dataset_references_validator_dict, dataset_climatology_length_validator_dict, dataset_climatology_bool_check_validator_dict]
+    for check in dataset_metadata_list:
+        write_to_csv(check,fname)
+
 
 
 
@@ -314,8 +415,8 @@ def main(filename,opt_data_csv = None, split_data=False):
 
 
 df_data, df_dataset_metadata, df_vars_metadata  = main('test_dataset.xlsx')
+#
+dataset_metadata_col_name_validator,dataset_short_name_dict,dataset_long_name_dict,dataset_version_length_validator_dict,dataset_release_date_length_validator_dict, dataset_release_date_time_format_validator_dict, dataset_make_validator_dict, dataset_source_valdiator_dict, dataset_distributor_validator_dict, dataset_acknowledgement_valdator_dict, dataset_DOI_validator_dict, dataset_history_validator_dict, dataset_desciption_validator_dict, dataset_references_validator_dict, dataset_climatology_length_validator_dict, dataset_climatology_bool_check_validator_dict = validate_dataset_metadata(df_dataset_metadata)
 
-dataset_metadata_col_name_validator,dataset_short_name_dict,dataset_long_name_dict,dataset_version_length_validator_dict,dataset_release_date_length_validator_dict, dataset_release_date_time_format_validator_dict, dataset_make_validator_dict = validate_dataset_metadata(df_dataset_metadata)
 
-
-# compile_report('valcmap_output.csv')
+compile_report('valcmap_output.csv')
