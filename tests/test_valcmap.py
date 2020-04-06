@@ -63,29 +63,6 @@ def test_length_validator():
     assert suggested_max_length_fail == suggested_max_length_fail_expected, "suggested max fail test failed..."
 
 def test_time_format_validator():
-    """Validates a time format for an input column. Test function is named: test_time_format_validator() in test_valcmap.py.
-
-    Parameters
-    ----------
-    df : pandas dataframe
-       Pandas dataframe containing column to be time format validated.
-    col : str
-       Name of pandas dataframe column to validate.
-    time format : str
-       Required time format
-    test_name : str
-       Valdation test name.
-
-
-    Returns
-    -------
-    length_validator_dict : dictionary
-        python dictionary containing:
-            test name: str - of test name for output dict
-            error: str - error message
-            non_matching_vals: List - any values in non agreement
-
-    """
 
     test_name = 'time format validator test'
     df = pd.DataFrame({'pass_time_format_yymmdd': ['2000-01-01','2010-01-01'],
@@ -111,3 +88,27 @@ def test_time_format_validator():
     assert fail_time_format_yymmdd == fail_time_format_yymmdd_expected, "fail time format yymmdd failed..."
     assert pass_time_format_yymmddThhmmss == pass_time_format_yymmddThhmmss_expected, "pass time format yymmddThhmmss failed..."
     assert fail_time_format_yymmddThhmmss == fail_time_format_yymmddThhmmss_expected, "fail time format yymmddThhmmss failed..."
+
+
+def test_climatology_bool_validator():
+
+    test_name = 'climatology boolean test'
+
+    df = pd.DataFrame({'pass_climatology_0': ['0'],
+                       'pass_climatology_1': ['1'],
+                       'fail_climatology': ['climatology']})
+
+    """expected outputs"""
+    pass_climatology_0_expected = {"test_name": 'climatology boolean test', "error": '',"non_matching_vals": ''}
+    pass_climatology_1_expected = {"test_name": 'climatology boolean test', "error": '',"non_matching_vals": ''}
+    fail_climatology_expected   = {"test_name": 'climatology boolean test', "error": 'WARNING: climatology values is not 0 or 1 (0 means dataset is not climatology product, 1 means dataset is climatology product.)',"non_matching_vals": 'climatology'}
+
+    """func calls"""
+    pass_climatology_0 = valcmap.climatology_bool_validator(df, 'pass_climatology_0',test_name)
+    pass_climatology_1 = valcmap.climatology_bool_validator(df, 'pass_climatology_1',test_name)
+    fail_climatology   = valcmap.climatology_bool_validator(df, 'fail_climatology',test_name)
+
+    """tests"""
+    assert pass_climatology_0 == pass_climatology_0_expected, "pass climatology 0 bool failed..."
+    assert pass_climatology_1 == pass_climatology_1_expected, "pass climatology 1 bool failed..."
+    assert fail_climatology   == fail_climatology_expected, "fail climatology test failed..."

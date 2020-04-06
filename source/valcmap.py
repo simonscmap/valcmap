@@ -223,6 +223,7 @@ def climatology_bool_validator(df, col, test_name):
         non_matching_vals = ''
     else:
         msg = 'WARNING: climatology values is not 0 or 1 (0 means dataset is not climatology product, 1 means dataset is climatology product.)'
+        # print(msg)
         non_matching_vals = str(df[col].astype(str)[0])
 
     climatology_bool_validator_dict = {
