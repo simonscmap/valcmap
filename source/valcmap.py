@@ -54,20 +54,7 @@ def validate_fpath(filename, opt_data_csv = None, split_data=False):
 ##############################################################
 
 
-# Check header columns
-# Check Time format
-# Check Latitude Format
-# Check Longitude Format
-# Check Depth Values are non Negative
-# Check Missing Values
-# Replace Missing Values with ''
-# Sort By Time, Lat, Lon, Depth
-# Dataset make - check if make.lower() is in tblMakes. If not, warn, pause to create new field in SQL server
-# Column contains string, ex DOI
-
-
-
-def col_name_validator(df,col_name_list, test_name):
+def col_name_validator(df,test_name,col_name_list):
 
     """ Validates the header names of a dataframe. Test function is named test_col_name_validator() in test_valcmap.py.
 
@@ -86,7 +73,7 @@ def col_name_validator(df,col_name_list, test_name):
         non_matching_vals = ['']
     else:
         msg = 'WARNING: Column headers do not match input column list.'
-        non_matching_vals = list(set(col_name_list) ^ set(header_name_list))
+        non_matching_vals = sorted(set(set(col_name_list) ^ set(header_name_list)))
 
     col_name_validator_dict = {
         "test_name":test_name,
@@ -121,7 +108,7 @@ def length_validator(df, col,test_name, max_length = '', min_length='', suggeste
     length_validator_dict : dictionary
         python dictionary containing:
             error message: str.
-            masked_series: Pandas series of any values that are longer then length limit.
+            non_matching_vals: Pandas series of any values that are longer then length limit.
             mask: Pandas series of boolean mask. True == length invalid, False == length valid.
 
     """
@@ -144,27 +131,27 @@ def length_validator(df, col,test_name, max_length = '', min_length='', suggeste
 
     if max_len_mask.any() == True: # a True value exists in the series of masked max length
         msg = 'WARNING: Some values are longer then accepted column limits.'
-        masked_series = list(df[col][max_len_mask==True])
+        non_matching_vals = list(df[col][max_len_mask==True])
 
     elif min_length_mask.any() == True:
         msg = 'WARNING: Some values are less then minimum length.'
-        masked_series = list(df[col][min_length_mask==True])
+        non_matching_vals = list(df[col][min_length_mask==True])
 
     elif suggested_len_mask.any() == True:
         msg = 'WARNING: Some values are longer then suggested length.'
-        masked_series = list(df[col][suggested_len_mask==True])
+        non_matching_vals = list(df[col][suggested_len_mask==True])
 
     else:
         msg = ''
-        masked_series = ''
+        non_matching_vals = ''
 
 
     length_validator_dict = {
         "test_name": test_name,
         "error": msg,
-        "masked_series": masked_series
-        }
-    # print(length_validator_dict)
+        "non_matching_vals": non_matching_vals
+                }
+
     return length_validator_dict
 
 
@@ -193,13 +180,13 @@ def time_format_validator(df, col, time_format,test_name):
             non_matching_vals: List - any values in non agreement
 
     """
-    try:
-        datetime.datetime.strptime(df[col].astype(str)[0],time_format)
+    non_matching_vals = list(df[col][df[col].apply(lambda x: pd.to_datetime(x, errors='coerce', exact=True, format='%Y-%m-%d')).isnull()])
+
+    if not non_matching_vals: #if the non matching vals list is empty...
+        non_matching_vals = ['']
         msg = ''
-        non_matching_vals = ''
-    except:
-        msg = 'WARNING: Time value does not match time format of: ' + time_format
-        non_matching_vals = str(df[col].astype(str)[0])
+    else:
+        msg = 'WARNING: Time value(s) do not match time formats.'
 
     time_format_validator_dict = {
         "test_name": test_name,
@@ -361,7 +348,7 @@ def dataset_climatology(df):
 
 def validate_dataset_metadata(df):
     #sheet wide validation
-    dataset_metadata_col_name_validator = col_name_validator(df,['dataset_short_name','dataset_long_name','dataset_version','dataset_release_date','dataset_make','dataset_source','dataset_distributor','dataset_acknowledgement','dataset_doi','dataset_history','dataset_description','dataset_references','climatology'], 'dataset metadata: validate column names')
+    dataset_metadata_col_name_validator = col_name_validator(df, 'dataset metadata: validate column names',['dataset_short_name','dataset_long_name','dataset_version','dataset_release_date','dataset_make','dataset_source','dataset_distributor','dataset_acknowledgement','dataset_doi','dataset_history','dataset_description','dataset_references','climatology'])
 
     #column specific validation
     dataset_short_name_dict = dataset_short_name(df)
