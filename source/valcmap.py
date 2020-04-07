@@ -265,7 +265,7 @@ def make_list_validator(df, col,test_name):
         msg = ''
         non_matching_vals = ''
     else:
-        msg = str(df[col].iloc[0]) + ' is not a current option in the CMAP tblMakes. Please contact the CMAP team and we can add other options. The current options are: ' + str(list_makes_cmap_lowercase)
+        msg = 'The dataset Make input is not valid. Please contact the CMAP team and we can add other options. The current options are: ' + str(list_makes_cmap_lowercase)
         non_matching_vals = str(df[col].iloc[0])
 
     make_list_validator_dict = {

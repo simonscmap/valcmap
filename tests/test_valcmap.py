@@ -112,3 +112,25 @@ def test_climatology_bool_validator():
     assert pass_climatology_0 == pass_climatology_0_expected, "pass climatology 0 bool failed..."
     assert pass_climatology_1 == pass_climatology_1_expected, "pass climatology 1 bool failed..."
     assert fail_climatology   == fail_climatology_expected, "fail climatology test failed..."
+
+
+def test_make_list_validator():
+    #make_list_validator(df, col,test_name)
+    test_name = 'Make list test'
+
+    df = pd.DataFrame({'pass_make_list': ['observation'],
+                       'fail_make_list': ['Satellite']})
+
+    """expected outputs"""
+    pass_make_list_expected =  {"test_name": 'Make list test', "error": '',"non_matching_vals": ''}
+    fail_make_list_expected =  {"test_name": 'Make list test', "error": "The dataset Make input is not valid. Please contact the CMAP team and we can add other options. The current options are: ['observation', 'model', 'assimilation']","non_matching_vals": 'Satellite'}
+
+    """func calls"""
+    pass_make_list = valcmap.make_list_validator(df, 'pass_make_list',test_name)
+    fail_make_list = valcmap.make_list_validator(df, 'fail_make_list',test_name)
+
+    """tests"""
+    assert pass_make_list == pass_make_list_expected, "pass make list test failed..."
+    assert fail_make_list   == fail_make_list_expected, "fail make list test failed..."
+
+# df1, df2, df3, df4 = test_make_list_validator()
