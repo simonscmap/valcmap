@@ -1,5 +1,8 @@
 ## DEVNOTES 04-01-20
-## Eventually move all error messages into sql table to be shared between python and JS
+## -Eventually move all error messages into sql table to be shared between python and JS
+## -Transition to command line tool, input is filepath --opts,
+#export is filepath name with _validation appended. Print out any issues in error reportself.
+
 
 """
 
@@ -22,6 +25,7 @@ import numpy as np
 import sys
 import csv
 import datetime
+from keyword import iskeyword
 
 
 
@@ -70,7 +74,7 @@ def col_name_validator(df,test_name,col_name_list):
     header_name_list = list(df.columns)
     if set(header_name_list) == set(col_name_list):
         msg = ''
-        non_matching_vals = ['']
+        non_matching_vals = ''
     else:
         msg = 'WARNING: Column headers do not match input column list.'
         non_matching_vals = sorted(set(set(col_name_list) ^ set(header_name_list)))
@@ -92,8 +96,6 @@ def length_validator(df, col,test_name, max_length = '', min_length='', suggeste
        Pandas dataframe containing column to be length validated.
     col : str
        Name of pandas dataframe column to validate.
-    length : int
-       Max length of values allowed in column.
     test_name : str
        Valdation test name.
     max_length (optinal) : int
@@ -183,7 +185,7 @@ def time_format_validator(df, col, time_format,test_name):
     non_matching_vals = list(df[col][df[col].apply(lambda x: pd.to_datetime(x, errors='coerce', exact=True, format='%Y-%m-%d')).isnull()])
 
     if not non_matching_vals: #if the non matching vals list is empty...
-        non_matching_vals = ['']
+        non_matching_vals = ''
         msg = ''
     else:
         msg = 'WARNING: Time value(s) do not match time formats.'
@@ -235,6 +237,9 @@ def climatology_bool_validator(df, col, test_name):
     return climatology_bool_validator_dict
 
 
+
+
+
 def make_list_validator(df, col,test_name):
     """Validates the dataset_make column to see if the value is in tblMakes in CMAP. Test function is named: test_time_format_validator() in test_valcmap.py.
 
@@ -275,9 +280,52 @@ def make_list_validator(df, col,test_name):
         }
     return make_list_validator_dict
 
+
+def illegal_character_validator(df, col,test_name):
+
+    """Checks a column for any illegal (for python variable names) characters. Test function is named: test_illegal_character_validator() in test_valcmap.py.
+
+    Parameters
+    ----------
+    df : pandas dataframe
+       Pandas dataframe containing column to be length validated.
+    col : str
+       Name of pandas dataframe column to validate.
+    test_name : str
+       Valdation test name.
+
+    Returns
+    -------
+    length_validator_dict : dictionary
+        python dictionary containing:
+            error message: str.
+            msg: str
+            non_matching_vals: List of any values that do not meet validation conditions.
+
+    """
+
+    def is_valid_variable_name(name):
+        return name.isidentifier() and not iskeyword(name)
+
+    non_matching_vals = list(df[col][~(df[col].apply(is_valid_variable_name))])
+
+    if not non_matching_vals: #if the non matching vals list is empty...
+        non_matching_vals = ''
+        msg = ''
+    else:
+        msg = "WARNING: illegal python variable names detected. var_short_names must be code friendly and cannot be reserved words. Names can contain lower and upper case ltters as well as numbers and underscores. They cannot begin with numbers or use special symbols such as: !, @, #, $, %. Some words are reserved in python. Those are: 'False','None','True','and','as','assert','async','await','break','class','continue','def','del','elif','else','except','finally','for','from','global','if','import','in','is','lambda','nonlocal','not','or','pass','raise','return','try','while','with','yield'"
+
+    illegal_character_validator_dict = {
+        "test_name": test_name,
+        "error": msg,
+        "non_matching_vals": non_matching_vals
+        }
+    return illegal_character_validator_dict
+
+
 ##############################################################
 ###############                                ###############
-#               Validate Data Sheet Functions                #
+#         Validate Dataset Metadata Sheet Functions          #
 ###############                                ###############
 ##############################################################
 
@@ -335,7 +383,7 @@ def dataset_history(df):
     return dataset_history_length_validator
 
 def dataset_description(df):
-    dataset_description_length_validator = length_validator(df, 'dataset_description','dataset metadata: validate dataset description length',10000,50, 200)
+    dataset_description_length_validator = length_validator(df, 'dataset_description','dataset metadata: validate dataset description length',10000,50) #max, min , suggested max
     return dataset_description_length_validator
 
 def dataset_references(df):
@@ -346,6 +394,8 @@ def dataset_climatology(df):
     dataset_climatology_length_validator = length_validator(df, 'climatology','dataset metadata: validate dataset climatology length',2)
     dataset_climatology_bool_check_validator = climatology_bool_validator(df, 'climatology', 'dataset metadata: validate dataset climatology bool values')
     return dataset_climatology_length_validator, dataset_climatology_bool_check_validator
+
+###################################################
 
 def validate_dataset_metadata(df):
     #sheet wide validation
@@ -369,7 +419,33 @@ def validate_dataset_metadata(df):
     return dataset_metadata_col_name_validator,dataset_short_name_dict,dataset_long_name_dict,dataset_version_length_validator_dict,dataset_release_date_length_validator_dict, dataset_release_date_time_format_validator_dict, dataset_make_validator_dict, dataset_source_valdiator_dict, dataset_distributor_validator_dict, dataset_acknowledgement_valdator_dict, dataset_DOI_validator_dict, dataset_history_validator_dict, dataset_desciption_validator_dict, dataset_references_validator_dict, dataset_climatology_length_validator_dict, dataset_climatology_bool_check_validator_dict
 
 
+##############################################################
+###############                                ###############
+#         Validate Dataset Metadata Sheet Functions          #
+###############                                ###############
+##############################################################
+
+#var_short_name
+#< variable short name (<50 chars) >  ↓ Validate length, illegal python chars including spaces, match vars in datasheet
+def var_short_name(df):
+    dataset_short_name_length_validator_dict = length_validator(df, 'dataset_short_name','dataset metadata: validate short name length',50,1,30)
+    return dataset_short_name_length_validator_dict
+
+#var_long_name
+#< variable short name (<50 chars) >  ↓ Validate length
+def var_long_name(df):
+    var_long_name_length_validator_dict = length_validator(df, 'var_long_name','vars metadata: validate long name length',200,1,100)
+    return var_long_name_length_validator_dict
+
+
+##############################################################
+
 def validate_vars_metadata(df):
+
+    #sheet wide validation
+
+    #column specific validation
+
     pass
 ##############################################################
 ###############                                ###############
@@ -397,14 +473,14 @@ def compile_report(fname):
 def main(filename,opt_data_csv = None, split_data=False):
     df_data, df_dataset_metadata, df_vars_metadata = validate_fpath(filename,opt_data_csv,split_data)
     return df_data, df_dataset_metadata, df_vars_metadata
-    # validate_data(df_data)
-    # validate_dataset_metadata(df_dataset_metadata)
-    # validate_vars_metadata(df_vars_metadata)
+    validate_data(df_data)
+    validate_dataset_metadata(df_dataset_metadata)
+    validate_vars_metadata(df_vars_metadata)
 
 
 # df_data, df_dataset_metadata, df_vars_metadata  = main('test_dataset.xlsx')
-# #
+# # #
 # dataset_metadata_col_name_validator,dataset_short_name_dict,dataset_long_name_dict,dataset_version_length_validator_dict,dataset_release_date_length_validator_dict, dataset_release_date_time_format_validator_dict, dataset_make_validator_dict, dataset_source_valdiator_dict, dataset_distributor_validator_dict, dataset_acknowledgement_valdator_dict, dataset_DOI_validator_dict, dataset_history_validator_dict, dataset_desciption_validator_dict, dataset_references_validator_dict, dataset_climatology_length_validator_dict, dataset_climatology_bool_check_validator_dict = validate_dataset_metadata(df_dataset_metadata)
 #
-#
+# #
 # compile_report('valcmap_output.csv')

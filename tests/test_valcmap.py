@@ -14,7 +14,7 @@ def test_col_name_validator():
     df_fail = pd.DataFrame(columns = ['dataset_short_name','dataset_long_name','dataset_release_date','dataset_make','dataset_source','dataset_distributor','dataset_acknowledgement','dataset_doi','dataset_history','dataset_description'])
 
     """expected outputs"""
-    col_name_pass_expected = {"test_name": 'column name validator test', "error": '',"non_matching_vals": ['']}
+    col_name_pass_expected = {"test_name": 'column name validator test', "error": '',"non_matching_vals": ''}
     col_name_fail_expected = {"test_name": 'column name validator test', "error": 'WARNING: Column headers do not match input column list.',"non_matching_vals": sorted(set(['dataset_version','dataset_references','climatology']))}
 
 
@@ -71,9 +71,9 @@ def test_time_format_validator():
                        'fail_time_format_yymmddThhmmss': ['2000 / 01 / 01 / 12:01:01','12APR2020']})
 
     """expected outputs"""
-    pass_time_format_yymmdd_expected = {"test_name": 'time format validator test', "error": '',"non_matching_vals": ['']}
+    pass_time_format_yymmdd_expected = {"test_name": 'time format validator test', "error": '',"non_matching_vals": ''}
     fail_time_format_yymmdd_expected = {"test_name": 'time format validator test', "error": 'WARNING: Time value(s) do not match time formats.',"non_matching_vals": ['2000 / 01 / 01', 'APR122010']}
-    pass_time_format_yymmddThhmmss_expected = {"test_name": 'time format validator test', "error": '',"non_matching_vals": ['']}
+    pass_time_format_yymmddThhmmss_expected = {"test_name": 'time format validator test', "error": '',"non_matching_vals": ''}
     fail_time_format_yymmddThhmmss_expected = {"test_name": 'time format validator test', "error": 'WARNING: Time value(s) do not match time formats.',"non_matching_vals": ['2000 / 01 / 01 / 12:01:01','12APR2020']}
 
     """func calls"""
@@ -115,7 +115,6 @@ def test_climatology_bool_validator():
 
 
 def test_make_list_validator():
-    #make_list_validator(df, col,test_name)
     test_name = 'Make list test'
 
     df = pd.DataFrame({'pass_make_list': ['observation'],
@@ -133,4 +132,21 @@ def test_make_list_validator():
     assert pass_make_list == pass_make_list_expected, "pass make list test failed..."
     assert fail_make_list   == fail_make_list_expected, "fail make list test failed..."
 
-# df1, df2, df3, df4 = test_make_list_validator()
+def test_illegal_character_validator():
+    test_name = 'Illegal character test'
+
+    df = pd.DataFrame({'pass_ill_char': ['variable_1','var_1','VariableOne'],
+                       'fail_ill_char': ['pass', '%measured', '1_station']})
+
+    """expected outputs"""
+    pass_ill_char_expected =  {"test_name": 'Illegal character test', "error": '',"non_matching_vals": ''}
+    fail_ill_char_expected =  {"test_name": 'Illegal character test', "error":"WARNING: illegal python variable names detected. var_short_names must be code friendly and cannot be reserved words. Names can contain lower and upper case ltters as well as numbers and underscores. They cannot begin with numbers or use special symbols such as: !, @, #, $, %. Some words are reserved in python. Those are: 'False','None','True','and','as','assert','async','await','break','class','continue','def','del','elif','else','except','finally','for','from','global','if','import','in','is','lambda','nonlocal','not','or','pass','raise','return','try','while','with','yield'"
+    ,"non_matching_vals": ['pass', '%measured', '1_station']}
+
+    """func calls"""
+    pass_ill_char = valcmap.illegal_character_validator(df, 'pass_ill_char',test_name)
+    fail_ill_char = valcmap.illegal_character_validator(df, 'fail_ill_char',test_name)
+
+    """tests"""
+    assert pass_ill_char == pass_ill_char_expected, "pass illegal character test failed..."
+    assert fail_ill_char   == fail_ill_char_expected, "fail illegal character test failed..."
