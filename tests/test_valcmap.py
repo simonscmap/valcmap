@@ -187,3 +187,42 @@ def test_spatial_res_validator():
     """tests"""
     assert pass_spatial_res_list == pass_spatial_res_list_expected, "pass spatial_res list test failed..."
     assert fail_spatial_res_list   == fail_spatial_res_list_expected, "fail spatial_res list test failed..."
+
+
+def test_var_discipline_validator():
+    test_name = 'var_discipline list test'
+
+    df = pd.DataFrame({'pass_var_discipline_list': ['daily', 'eight day running', 'irregular'],
+                       'fail_var_discipline_list': ['min', 'tenminutes', 'single_sample']})
+
+    """expected outputs"""
+    pass_var_discipline_list_expected =  {"test_name": 'var_discipline list test', "error": '',"non_matching_vals": ''}
+    fail_var_discipline_list_expected =  {"test_name": 'var_discipline list test', "error": "The var_var_discipline input is not valid. Please contact the CMAP team and we can add other options. The current options are: ['three minutes', 'six hourly', 'daily', 'weekly', 'monthly', 'annual', 'irregular', 'monthly climatology', 'three days', 'eight day running', 'eight days ', 'one second']","non_matching_vals": ['min', 'tenminutes', 'single_sample']}
+
+    """func calls"""
+    pass_var_discipline_list = valcmap.var_var_discipline_validator(df, 'pass_var_discipline_list',test_name)
+    fail_var_discipline_list = valcmap.var_var_discipline_validator(df, 'fail_var_discipline_list',test_name)
+
+    """tests"""
+    assert pass_var_discipline_list == pass_var_discipline_list_expected, "pass var_discipline list test failed..."
+    assert fail_var_discipline_list   == fail_var_discipline_list_expected, "fail var_discipline list test failed..."
+
+def test_var_discipline_validator():
+
+    test_name = 'var_discipline test'
+
+    df = pd.DataFrame({'pass_var_discipline_list': ['physics','chemistry', 'physics+biogeochemistry'],
+                       'fail_var_discipline_list': ['astrophysics', 'warp field mechanics', 'positronic programming']})
+
+    """expected outputs"""
+    pass_var_discipline_list_expected =  {"test_name": 'var_discipline list test', "error": '',"non_matching_vals": ''}
+    fail_var_discipline_list_expected =  {"test_name": 'var_discipline list test', "error": "The var_discipline input is not valid. Please contact the CMAP team and we can add other options. The current options are: ['physics', 'chemistry', 'biology', 'biogeochemistry', 'physics+biogeochemistry', 'chemistry+biology+biogeochemistry', 'biosample', 'biology+biogeochemistry+biogeography', 'physics+chemistry', 'genomics', 'chemistry+biogeochemistry']","non_matching_vals": ['astrophysics', 'warp field mechanics', 'positronic programming']}
+
+    """func calls"""
+    pass_var_discipline_list = valcmap.var_discipline_validator(df, 'pass_var_discipline_list',test_name)
+    fail_var_discipline_list = valcmap.var_discipline_validator(df, 'fail_var_discipline_list',test_name)
+
+    print(pass_var_discipline_list)
+    """tests"""
+    # assert pass_var_discipline_list == pass_var_discipline_list_expected, "pass var_discipline list test failed..."
+    # assert fail_var_discipline_list   == fail_var_discipline_list_expected, "fail var_discipline list test failed..."

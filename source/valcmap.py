@@ -401,6 +401,89 @@ def var_spatial_res_validator(df, col,test_name):
         }
     return var_spatial_res_validator_dict
 
+def var_temporal_res_validator(df, col,test_name):
+    """Validates the var_temporal_res column to see if the value is in tbltemporal_Resolutions in CMAP. Test function is named: test_var_temporal_res_validator() in test_valcmap.py.
+
+    Parameters
+    ----------
+    df : pandas dataframe
+       Pandas dataframe containing column to be validated.
+    col : str
+       Name of pandas dataframe column to validate.
+    test_name : str
+       Valdation test name.
+
+
+    Returns
+    -------
+    length_validator_dict : dictionary
+        python dictionary containing:
+            test name: str - of test name for output dict
+            error: str - error message
+            non_matching_vals: List - any values in non agreement
+
+    """
+    list_temporal_res_cmap = list(api.query('''SELECT [Temporal_Resolution] FROM tblTemporal_Resolutions''').iloc[:,0])
+    list_temporal_res_lowercase = [i.lower() for i in list_temporal_res_cmap]
+    print(list_temporal_res_lowercase)
+    non_matching_vals = list(df[col][~df[col].str.lower().isin(list_temporal_res_lowercase)])
+
+    if not non_matching_vals: #if the non matching vals list is empty...
+        non_matching_vals = ''
+        msg = ''
+    else:
+        msg = 'The var_temporal_res input is not valid. Please contact the CMAP team and we can add other options. The current options are: ' + str(list_temporal_res_lowercase)
+
+
+    var_temporal_res_validator_dict = {
+        "test_name": test_name,
+        "error": msg,
+        "non_matching_vals": non_matching_vals
+        }
+    return var_temporal_res_validator_dict
+
+
+def var_discipline_validator(df, col,test_name):
+    """Validates the var_discipline column to see if the value is in tblStudy_Domains in CMAP. Test function is named: test_var_discipline_validator() in test_valcmap.py.
+
+    Parameters
+    ----------
+    df : pandas dataframe
+       Pandas dataframe containing column to be validated.
+    col : str
+       Name of pandas dataframe column to validate.
+    test_name : str
+       Valdation test name.
+
+
+    Returns
+    -------
+    length_validator_dict : dictionary
+        python dictionary containing:
+            test name: str - of test name for output dict
+            error: str - error message
+            non_matching_vals: List - any values in non agreement
+
+    """
+    list_var_discipline_cmap = list(api.query('''SELECT [Study_Domain] FROM tblStudy_Domains''').iloc[:,0])
+    list_var_discipline_lowercase = [i.lower() for i in list_var_discipline_cmap]
+    print(list_var_discipline_lowercase)
+    non_matching_vals = list(df[col][~df[col].str.lower().isin(list_var_discipline_lowercase)])
+
+    if not non_matching_vals: #if the non matching vals list is empty...
+        non_matching_vals = ''
+        msg = ''
+    else:
+        msg = 'The var_discipline input is not valid. Please contact the CMAP team and we can add other options. The current options are: ' + str(list_var_discipline_lowercase)
+
+
+    var_discipline_validator_dict = {
+        "test_name": test_name,
+        "error": msg,
+        "non_matching_vals": non_matching_vals
+        }
+    return var_discipline_validator_dict
+
 
 ##############################################################
 ###############                                ###############
@@ -529,6 +612,10 @@ def var_unit(df):
 
 def var_spatial_res(df):
     var_spatial_res_validator(df, 'var_spatial_res','vars metadata: validate var_spatial_res')
+    pass
+
+def var_temporal_res(df):
+    var_temporal_res_validator(df, 'var_temporal_res','vars metadata: validate var_temporal_res')
     pass
 
 
