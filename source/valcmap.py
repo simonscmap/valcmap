@@ -246,11 +246,9 @@ def make_list_validator(df, col,test_name):
     Parameters
     ----------
     df : pandas dataframe
-       Pandas dataframe containing column to be time format validated.
+       Pandas dataframe containing column to be validated.
     col : str
        Name of pandas dataframe column to validate.
-    time format : str
-       Required time format
     test_name : str
        Valdation test name.
 
@@ -303,10 +301,8 @@ def illegal_character_validator(df, col,test_name):
             non_matching_vals: List of any values that do not meet validation conditions.
 
     """
-
     def is_valid_variable_name(name):
         return name.isidentifier() and not iskeyword(name)
-
     non_matching_vals = list(df[col][~(df[col].apply(is_valid_variable_name))])
 
     if not non_matching_vals: #if the non matching vals list is empty...
@@ -322,12 +318,98 @@ def illegal_character_validator(df, col,test_name):
         }
     return illegal_character_validator_dict
 
+def var_sensor_validator(df, col,test_name):
+    """Validates the var_sensor column to see if the value is in tblSensors in CMAP. Test function is named: test_var_sensor_validator() in test_valcmap.py.
+
+    Parameters
+    ----------
+    df : pandas dataframe
+       Pandas dataframe containing column to be validated.
+    col : str
+       Name of pandas dataframe column to validate.
+    test_name : str
+       Valdation test name.
+
+
+    Returns
+    -------
+    length_validator_dict : dictionary
+        python dictionary containing:
+            test name: str - of test name for output dict
+            error: str - error message
+            non_matching_vals: List - any values in non agreement
+
+    """
+    list_sensor_cmap = list(api.query('''SELECT [Sensor] FROM tblSensors''').iloc[:,0])
+    list_sensor_cmap_lowercase = [i.lower() for i in list_sensor_cmap]
+
+    non_matching_vals = list(df[col][~df[col].str.lower().isin(list_sensor_cmap_lowercase)])
+
+    if not non_matching_vals: #if the non matching vals list is empty...
+        non_matching_vals = ''
+        msg = ''
+    else:
+        msg = 'The var_sensor input is not valid. Please contact the CMAP team and we can add other options. The current options are: ' + str(list_sensor_cmap_lowercase)
+
+
+    var_sensor_validator_dict = {
+        "test_name": test_name,
+        "error": msg,
+        "non_matching_vals": non_matching_vals
+        }
+    return var_sensor_validator_dict
+
+def var_spatial_res_validator(df, col,test_name):
+    """Validates the var_spatial_res column to see if the value is in tblSpatial_Resolutions in CMAP. Test function is named: test_var_spatial_res_validator() in test_valcmap.py.
+
+    Parameters
+    ----------
+    df : pandas dataframe
+       Pandas dataframe containing column to be validated.
+    col : str
+       Name of pandas dataframe column to validate.
+    test_name : str
+       Valdation test name.
+
+
+    Returns
+    -------
+    length_validator_dict : dictionary
+        python dictionary containing:
+            test name: str - of test name for output dict
+            error: str - error message
+            non_matching_vals: List - any values in non agreement
+
+    """
+    list_spatial_res_cmap = list(api.query('''SELECT [Spatial_Resolution] FROM tblSpatial_Resolutions''').iloc[:,0])
+    list_spatial_res_lowercase = [i.lower() for i in list_spatial_res_cmap]
+    list_spatial_res_lowercase = [ch.replace('â', '') for ch in list_spatial_res_lowercase]
+
+    non_matching_vals = list(df[col][~df[col].str.lower().isin(list_spatial_res_lowercase)])
+
+    if not non_matching_vals: #if the non matching vals list is empty...
+        non_matching_vals = ''
+        msg = ''
+    else:
+        msg = 'The var_spatial_res input is not valid. Please contact the CMAP team and we can add other options. The current options are: ' + str(list_spatial_res_lowercase)
+
+
+    var_spatial_res_validator_dict = {
+        "test_name": test_name,
+        "error": msg,
+        "non_matching_vals": non_matching_vals
+        }
+    return var_spatial_res_validator_dict
+
 
 ##############################################################
 ###############                                ###############
 #         Validate Dataset Metadata Sheet Functions          #
 ###############                                ###############
 ##############################################################
+
+
+
 
 def validate_data_time(df):
     length_validator(df, col, length)
@@ -342,7 +424,7 @@ def validate_data(df):
 ###############                                ###############
 ##############################################################
 def dataset_short_name(df):
-    dataset_short_name_length_validator_dict = length_validator(df, 'dataset_short_name','dataset metadata: validate short name length',50,1,30)
+    dataset_short_name_length_validator_dict = length_validator(df, 'dataset_short_name','vars metadata: validate short name length',50,1,30)
     return dataset_short_name_length_validator_dict
 
 def dataset_long_name(df):
@@ -429,24 +511,37 @@ def validate_dataset_metadata(df):
 #< variable short name (<50 chars) >  ↓ Validate length, illegal python chars including spaces, match vars in datasheet
 def var_short_name(df):
     dataset_short_name_length_validator_dict = length_validator(df, 'dataset_short_name','dataset metadata: validate short name length',50,1,30)
+    dataset_short_name_ill_char_validator_dict = illegal_character_validator(df, 'dataset_short_name','vars metadata: validate short name illegal chars.')
     return dataset_short_name_length_validator_dict
 
 #var_long_name
-#< variable short name (<50 chars) >  ↓ Validate length
 def var_long_name(df):
     var_long_name_length_validator_dict = length_validator(df, 'var_long_name','vars metadata: validate long name length',200,1,100)
     return var_long_name_length_validator_dict
+
+def var_sensor(df):
+    var_sensor_validator_dict = var_sensor_validator(df, 'var_sensor','vars metadata: validate var_sensor')
+    pass
+
+def var_unit(df):
+    var_unit_length_validator_dict = length_validator(df, 'var_unit','vars metadata: validate unit length',50)
+    pass
+
+def var_spatial_res(df):
+    var_spatial_res_validator(df, 'var_spatial_res','vars metadata: validate var_spatial_res')
+    pass
+
 
 
 ##############################################################
 
 def validate_vars_metadata(df):
+    pass
 
     #sheet wide validation
 
     #column specific validation
 
-    pass
 ##############################################################
 ###############                                ###############
 #                    Compile Funcitons                       #

@@ -150,3 +150,40 @@ def test_illegal_character_validator():
     """tests"""
     assert pass_ill_char == pass_ill_char_expected, "pass illegal character test failed..."
     assert fail_ill_char   == fail_ill_char_expected, "fail illegal character test failed..."
+
+def test_var_sensor_validator():
+    test_name = 'var_sensor list test'
+
+    df = pd.DataFrame({'pass_sensor_list': ['satellite', 'underway ctd'],
+                       'fail_sensor_list': ['seaglider', 'airplane']})
+
+    """expected outputs"""
+    pass_var_sensor_list_expected =  {"test_name": 'var_sensor list test', "error": '',"non_matching_vals": ''}
+    fail_var_sensor_list_expected =  {"test_name": 'var_sensor list test', "error": "The var_sensor input is not valid. Please contact the CMAP team and we can add other options. The current options are: ['satellite', 'in-situ', 'blend', 'flow cytometry', 'ctd', 'underway ctd', 'optical', 'float', 'drifter', 'auv', 'bottle', 'sediment trap', 'cpr', 'towfish']","non_matching_vals": ['seaglider', 'airplane']}
+
+    """func calls"""
+    pass_sensor_list = valcmap.var_sensor_validator(df, 'pass_sensor_list',test_name)
+    fail_sensor_list = valcmap.var_sensor_validator(df, 'fail_sensor_list',test_name)
+
+    """tests"""
+    assert pass_sensor_list == pass_var_sensor_list_expected, "pass sensor list test failed..."
+    assert fail_sensor_list   == fail_var_sensor_list_expected, "fail sensor list test failed..."
+
+
+def test_spatial_res_validator():
+    test_name = 'spatial_res list test'
+
+    df = pd.DataFrame({'pass_spatial_res_list': ['Irregular', '1/25° X 1/25°', '70km X 70km'],
+                       'fail_spatial_res_list': ['150x150', '1 degree', 'global']})
+
+    """expected outputs"""
+    pass_spatial_res_list_expected =  {"test_name": 'spatial_res list test', "error": '',"non_matching_vals": ''}
+    fail_spatial_res_list_expected =  {"test_name": 'spatial_res list test', "error": "The var_spatial_res input is not valid. Please contact the CMAP team and we can add other options. The current options are: ['irregular', '1/2° x 1/2°', '1/4° x 1/4°', '1/25° x 1/25°', '4km x 4km', '1/12° x 1/12°', '70km x 70km', '1° x 1°', '9km x 9km', '25km x 25km']","non_matching_vals": ['150x150', '1 degree', 'global']}
+
+    """func calls"""
+    pass_spatial_res_list = valcmap.var_spatial_res_validator(df, 'pass_spatial_res_list',test_name)
+    fail_spatial_res_list = valcmap.var_spatial_res_validator(df, 'fail_spatial_res_list',test_name)
+
+    """tests"""
+    assert pass_spatial_res_list == pass_spatial_res_list_expected, "pass spatial_res list test failed..."
+    assert fail_spatial_res_list   == fail_spatial_res_list_expected, "fail spatial_res list test failed..."
