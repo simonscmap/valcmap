@@ -204,7 +204,7 @@ def climatology_bool_validator(df, col, test_name):
     Parameters
     ----------
     df : pandas dataframe
-       Pandas dataframe containing column to be time format validated.
+       Pandas dataframe containing column to be validated.
     col : str
        Name of pandas dataframe column to validate.
     test_name : str
@@ -484,6 +484,9 @@ def var_discipline_validator(df, col,test_name):
         }
     return var_discipline_validator_dict
 
+def visualize_validator()
+visualize
+<0 is not visualizable, 1 is visualizable > ↓
 
 ##############################################################
 ###############                                ###############
