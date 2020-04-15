@@ -159,7 +159,7 @@ def test_var_sensor_validator():
 
     """expected outputs"""
     pass_var_sensor_list_expected =  {"test_name": 'var_sensor list test', "error": '',"non_matching_vals": ''}
-    fail_var_sensor_list_expected =  {"test_name": 'var_sensor list test', "error": "The var_sensor input is not valid. Please contact the CMAP team and we can add other options. The current options are: ['satellite', 'in-situ', 'blend', 'flow cytometry', 'ctd', 'underway ctd', 'optical', 'float', 'drifter', 'auv', 'bottle', 'sediment trap', 'cpr', 'towfish']","non_matching_vals": ['seaglider', 'airplane']}
+    fail_var_sensor_list_expected =  {"test_name": 'var_sensor list test', "error": "The var_sensor input is not valid. Please contact the CMAP team and we can add other options. The current options are: ['satellite', 'in-situ', 'blend', 'flow cytometry', 'ctd', 'underway ctd', 'optical', 'float', 'drifter', 'auv', 'bottle', 'sediment trap', 'cpr', 'towfish', 'fluorometer']","non_matching_vals": ['seaglider', 'airplane']}
 
     """func calls"""
     pass_sensor_list = valcmap.var_sensor_validator(df, 'pass_sensor_list',test_name)
@@ -168,7 +168,6 @@ def test_var_sensor_validator():
     """tests"""
     assert pass_sensor_list == pass_var_sensor_list_expected, "pass sensor list test failed..."
     assert fail_sensor_list   == fail_var_sensor_list_expected, "fail sensor list test failed..."
-
 
 def test_spatial_res_validator():
     test_name = 'spatial_res list test'
@@ -189,40 +188,59 @@ def test_spatial_res_validator():
     assert fail_spatial_res_list   == fail_spatial_res_list_expected, "fail spatial_res list test failed..."
 
 
+def test_temporal_res_validator():
+    test_name = 'temporal_res list test'
+
+    df = pd.DataFrame({'pass_temporal_res_list': ['daily', 'eight day running', 'irregular'],
+                       'fail_temporal_res_list': ['min', 'tenminutes', 'single_sample']})
+
+    """expected outputs"""
+    pass_temporal_res_list_expected =  {"test_name": 'temporal_res list test', "error": '',"non_matching_vals": ''}
+    fail_temporal_res_list_expected =  {"test_name": 'temporal_res list test', "error": "The var_temporal_res input is not valid. Please contact the CMAP team and we can add other options. The current options are: ['three minutes', 'six hourly', 'daily', 'weekly', 'monthly', 'annual', 'irregular', 'monthly climatology', 'three days', 'eight day running', 'eight days ', 'one second']","non_matching_vals": ['min', 'tenminutes', 'single_sample']}
+
+    """func calls"""
+    pass_temporal_res_list = valcmap.var_temporal_res_validator(df, 'pass_temporal_res_list',test_name)
+    fail_temporal_res_list = valcmap.var_temporal_res_validator(df, 'fail_temporal_res_list',test_name)
+    print(pass_temporal_res_list)
+    """tests"""
+    assert pass_temporal_res_list == pass_temporal_res_list_expected, "pass temporal_res list test failed..."
+    assert fail_temporal_res_list   == fail_temporal_res_list_expected, "fail temporal_res list test failed..."
+
+
 def test_var_discipline_validator():
     test_name = 'var_discipline list test'
 
-    df = pd.DataFrame({'pass_var_discipline_list': ['daily', 'eight day running', 'irregular'],
-                       'fail_var_discipline_list': ['min', 'tenminutes', 'single_sample']})
+    df = pd.DataFrame({'pass_var_discipline_list': ['physics', 'chemistry+biology+biogeochemistry', 'biology'],
+                       'fail_var_discipline_list': ['positronic programming', 'warp field theory', 'dilithium metalurgy']})
 
     """expected outputs"""
     pass_var_discipline_list_expected =  {"test_name": 'var_discipline list test', "error": '',"non_matching_vals": ''}
-    fail_var_discipline_list_expected =  {"test_name": 'var_discipline list test', "error": "The var_var_discipline input is not valid. Please contact the CMAP team and we can add other options. The current options are: ['three minutes', 'six hourly', 'daily', 'weekly', 'monthly', 'annual', 'irregular', 'monthly climatology', 'three days', 'eight day running', 'eight days ', 'one second']","non_matching_vals": ['min', 'tenminutes', 'single_sample']}
-
-    """func calls"""
-    pass_var_discipline_list = valcmap.var_var_discipline_validator(df, 'pass_var_discipline_list',test_name)
-    fail_var_discipline_list = valcmap.var_var_discipline_validator(df, 'fail_var_discipline_list',test_name)
-
-    """tests"""
-    assert pass_var_discipline_list == pass_var_discipline_list_expected, "pass var_discipline list test failed..."
-    assert fail_var_discipline_list   == fail_var_discipline_list_expected, "fail var_discipline list test failed..."
-
-def test_var_discipline_validator():
-
-    test_name = 'var_discipline test'
-
-    df = pd.DataFrame({'pass_var_discipline_list': ['physics','chemistry', 'physics+biogeochemistry'],
-                       'fail_var_discipline_list': ['astrophysics', 'warp field mechanics', 'positronic programming']})
-
-    """expected outputs"""
-    pass_var_discipline_list_expected =  {"test_name": 'var_discipline list test', "error": '',"non_matching_vals": ''}
-    fail_var_discipline_list_expected =  {"test_name": 'var_discipline list test', "error": "The var_discipline input is not valid. Please contact the CMAP team and we can add other options. The current options are: ['physics', 'chemistry', 'biology', 'biogeochemistry', 'physics+biogeochemistry', 'chemistry+biology+biogeochemistry', 'biosample', 'biology+biogeochemistry+biogeography', 'physics+chemistry', 'genomics', 'chemistry+biogeochemistry']","non_matching_vals": ['astrophysics', 'warp field mechanics', 'positronic programming']}
+    fail_var_discipline_list_expected =  {"test_name": 'var_discipline list test', "error": "The var_discipline input is not valid. Please contact the CMAP team and we can add other options. The current options are: ['physics', 'chemistry', 'biology', 'biogeochemistry', 'physics+biogeochemistry', 'chemistry+biology+biogeochemistry', 'biosample', 'biology+biogeochemistry+biogeography', 'physics+chemistry', 'genomics', 'chemistry+biogeochemistry']","non_matching_vals": ['positronic programming', 'warp field theory', 'dilithium metalurgy']}
 
     """func calls"""
     pass_var_discipline_list = valcmap.var_discipline_validator(df, 'pass_var_discipline_list',test_name)
     fail_var_discipline_list = valcmap.var_discipline_validator(df, 'fail_var_discipline_list',test_name)
 
-    print(pass_var_discipline_list)
     """tests"""
-    # assert pass_var_discipline_list == pass_var_discipline_list_expected, "pass var_discipline list test failed..."
-    # assert fail_var_discipline_list   == fail_var_discipline_list_expected, "fail var_discipline list test failed..."
+    assert pass_var_discipline_list == pass_var_discipline_list_expected, "pass var_discipline list test failed..."
+    assert fail_var_discipline_list   == fail_var_discipline_list_expected, "fail var_discipline list test failed..."
+
+
+def test_visualize_validator():
+
+    test_name = 'visualize test'
+
+    df = pd.DataFrame({'pass_visualize_list': ['0','1'],
+                       'fail_visualize_list': ['visualize', '']})
+
+    """expected outputs"""
+    pass_visualize_list_expected =  {"test_name": 'visualize test', "error": '',"non_matching_vals": ''}
+    fail_visualize_list_expected =  {"test_name": 'visualize test', "error": "The visualize input contains invalid values. 0 or 1  are the only acceptable inputs. (0 means variable is not meant to be visualized in the CMAP web application, 1 means the variable is meant to be visualized in the CMAP web application.)","non_matching_vals": ['visualize', '']}
+
+    """func calls"""
+    pass_visualize_list = valcmap.visualize_validator(df, 'pass_visualize_list',test_name)
+    fail_visualize_list = valcmap.visualize_validator(df, 'fail_visualize_list',test_name)
+
+    """tests"""
+    assert pass_visualize_list == pass_visualize_list_expected, "pass visualize list test failed..."
+    assert fail_visualize_list   == fail_visualize_list_expected, "fail visualize list test failed..."

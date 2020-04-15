@@ -86,7 +86,7 @@ def col_name_validator(df,test_name,col_name_list):
         }
     return col_name_validator_dict
 
-def length_validator(df, col,test_name, max_length = '', min_length='', suggested_max=''):
+def length_validator(df, col,test_name, max_length = '', min_length='', suggested_max='', delimit_str_flag = False, delimiter = ''):
 
     """Validates a length limit for an input column. Test function is named: test_length_validator() in test_valcmap.py.
 
@@ -104,6 +104,10 @@ def length_validator(df, col,test_name, max_length = '', min_length='', suggeste
        Minimum length of string
     suggested_max (optional) : int
        Suggested Max -- if string length is greater then, will recomend to reduce length
+    delimit_str_flag (optional) : bool
+       If True, column string will be split by delimiter and count will be based on # of strings, not total string length. ie. keywords.
+    delimiter (optional) : str
+       Delimiter to seperated strings if delimit_str_flag = True. ex: ','
 
     Returns
     -------
@@ -114,21 +118,25 @@ def length_validator(df, col,test_name, max_length = '', min_length='', suggeste
             mask: Pandas series of boolean mask. True == length invalid, False == length valid.
 
     """
+    if delimit_str_flag == True:
+        column_string_length = df[col].astype(str).str.split(str(delimiter)).str.len()
+    else:
+        column_string_length = df[col].astype(str).str.len()
 
     if max_length == '':
         max_len_mask = pd.Series(['False'] * len(df[col]))
     else:
-        max_len_mask = (df[col].astype(str).str.len() >= int(max_length))
+        max_len_mask = (column_string_length >= int(max_length))
 
     if min_length == '':
         min_length_mask = pd.Series(['False'] * len(df[col]))
     else:
-        min_length_mask = (df[col].astype(str).str.len() < int(min_length))
+        min_length_mask = (column_string_length < int(min_length))
 
     if suggested_max == '':
         suggested_len_mask = pd.Series(['False'] * len(df[col]))
     else:
-        suggested_len_mask = (df[col].astype(str).str.len() >= int(suggested_max))
+        suggested_len_mask = (column_string_length >= int(suggested_max))
 
 
     if max_len_mask.any() == True: # a True value exists in the series of masked max length
@@ -484,13 +492,53 @@ def var_discipline_validator(df, col,test_name):
         }
     return var_discipline_validator_dict
 
-def visualize_validator()
-visualize
-<0 is not visualizable, 1 is visualizable > ↓
+def visualize_validator(df, col,test_name):
+    #length check if missing
+    #bool like validator 0 or 1
+    """Validates the visualize column to see if the value is 0,1 or null. Test function is named: test_visualize_validator() in test_valcmap.py.
+
+    Parameters
+    ----------
+    df : pandas dataframe
+       Pandas dataframe containing column to be validated.
+    col : str
+       Name of pandas dataframe column to validate.
+    test_name : str
+       Valdation test name.
+
+
+    Returns
+    -------
+    length_validator_dict : dictionary
+        python dictionary containing:
+            test name: str - of test name for output dict
+            error: str - error message
+            non_matching_vals: List - any values in non agreement
+
+    """
+
+    non_matching_vals = list(df[col][~df[col].str.lower().isin(['0','1'])])
+
+    if not non_matching_vals: #if the non matching vals list is empty...
+        non_matching_vals = ''
+        msg = ''
+    else:
+        msg = "The visualize input contains invalid values. 0 or 1  are the only acceptable inputs. (0 means variable is not meant to be visualized in the CMAP web application, 1 means the variable is meant to be visualized in the CMAP web application.)"
+
+
+    visualize_validator_dict = {
+        "test_name": test_name,
+        "error": msg,
+        "non_matching_vals": non_matching_vals
+        }
+    return visualize_validator_dict
+
+
+
 
 ##############################################################
 ###############                                ###############
-#         Validate Dataset Metadata Sheet Functions          #
+#                 Validate Data Sheet Functions              #
 ###############                                ###############
 ##############################################################
 
@@ -589,48 +637,66 @@ def validate_dataset_metadata(df):
 
 ##############################################################
 ###############                                ###############
-#         Validate Dataset Metadata Sheet Functions          #
+#            Validate Vars Metadata Sheet Functions          #
 ###############                                ###############
 ##############################################################
 
-#var_short_name
-#< variable short name (<50 chars) >  ↓ Validate length, illegal python chars including spaces, match vars in datasheet
-def var_short_name(df):
-    dataset_short_name_length_validator_dict = length_validator(df, 'dataset_short_name','dataset metadata: validate short name length',50,1,30)
-    dataset_short_name_ill_char_validator_dict = illegal_character_validator(df, 'dataset_short_name','vars metadata: validate short name illegal chars.')
-    return dataset_short_name_length_validator_dict
 
-#var_long_name
+def var_short_name(df):
+    vm_short_name_lv = length_validator(df, 'dataset_short_name','dataset metadata: validate short name length',50,1,30)
+    vm_short_name_ic = illegal_character_validator(df, 'dataset_short_name','vars metadata: validate short name illegal chars.')
+    return vm_short_name_lv, vm_short_name_ic
+
 def var_long_name(df):
-    var_long_name_length_validator_dict = length_validator(df, 'var_long_name','vars metadata: validate long name length',200,1,100)
-    return var_long_name_length_validator_dict
+    vm_long_name_lv= length_validator(df, 'var_long_name','vars metadata: validate long name length',200,1,100)
+    return vm_long_name_lv
 
 def var_sensor(df):
-    var_sensor_validator_dict = var_sensor_validator(df, 'var_sensor','vars metadata: validate var_sensor')
-    pass
+    vm_sensor = var_sensor_validator(df, 'var_sensor','vars metadata: validate var_sensor')
+    return vm_sensor
 
 def var_unit(df):
-    var_unit_length_validator_dict = length_validator(df, 'var_unit','vars metadata: validate unit length',50)
-    pass
+    vm_unit_len = length_validator(df, 'var_unit','vars metadata: validate unit length',50)
+    return vm_unit_len
 
 def var_spatial_res(df):
-    var_spatial_res_validator(df, 'var_spatial_res','vars metadata: validate var_spatial_res')
-    pass
+    vm_spatial = var_spatial_res_validator(df, 'var_spatial_res','vars metadata: validate var_spatial_res')
+    return vm_spatial
 
 def var_temporal_res(df):
-    var_temporal_res_validator(df, 'var_temporal_res','vars metadata: validate var_temporal_res')
-    pass
+    vm_temporal =var_temporal_res_validator(df, 'var_temporal_res','vars metadata: validate var_temporal_res')
+    return vm_temporal
 
+def var_discipline(df):
+    vm_dis = var_discipline_validator(df, 'var_discipline','vars metadata: validate var_discipline')
+    return vm_dis
 
+def visualize(df):
+    vm_vis = visualize_validator(df, 'visualize','vars metadata: validate visualize')
+    return vm_vis
 
+def keywords(df):
+    vm_kw_len = length_validator(df, 'var_keywords','keyword', max_length = '', min_length=5, suggested_max='', delimit_str_flag = True, delimiter = ',')
+    return vm_kw_len
 ##############################################################
 
 def validate_vars_metadata(df):
-    pass
 
     #sheet wide validation
+    vm_col_name = col_name_validator(df, 'vars metadata: validate column names',['var_short_name','var_long_name','var_sensor','var_unit','var_spatial_res','var_temporal_res','var_missing_value','var_discipline','visualize','var_keywords','var_comment'])
 
     #column specific validation
+    vm_short_name_lv, vm_short_name_ic = var_short_name(df)
+    vm_long_name_lv = var_long_name(df)
+    vm_sensor = var_sensor(df)
+    vm_unit_len = var_unit(df)
+    vm_spatial = var_spatial_res(df)
+    vm_temporal = var_temporal_res(df)
+    vm_dis = var_discipline(df)
+    vm_vis = visualize(df)
+    vm_kw_len = keywords(df)
+
+    return vm_col_name, vm_short_name_lv, vm_short_name_ic, vm_long_name_lv, vm_sensor, vm_unit_len, vm_spatial, vm_temporal,vm_dis, vm_vis, vm_kw_len
 
 ##############################################################
 ###############                                ###############
@@ -664,7 +730,9 @@ def main(filename,opt_data_csv = None, split_data=False):
 
 
 # df_data, df_dataset_metadata, df_vars_metadata  = main('test_dataset.xlsx')
-# # #
+
+
+
 # dataset_metadata_col_name_validator,dataset_short_name_dict,dataset_long_name_dict,dataset_version_length_validator_dict,dataset_release_date_length_validator_dict, dataset_release_date_time_format_validator_dict, dataset_make_validator_dict, dataset_source_valdiator_dict, dataset_distributor_validator_dict, dataset_acknowledgement_valdator_dict, dataset_DOI_validator_dict, dataset_history_validator_dict, dataset_desciption_validator_dict, dataset_references_validator_dict, dataset_climatology_length_validator_dict, dataset_climatology_bool_check_validator_dict = validate_dataset_metadata(df_dataset_metadata)
 #
 # #
