@@ -206,6 +206,135 @@ def time_format_validator(df, col, time_format,test_name):
 
     return time_format_validator_dict
 
+def lat_format_validator(df, col,test_name):
+    """Validates a lat format for an input column. Test function is named: test_lat_format_validator() in test_valcmap.py.
+
+    Parameters
+    ----------
+    df : pandas dataframe
+       Pandas dataframe containing column to be lat format validated.
+    col : str
+       Name of pandas dataframe column to validate.
+    test_name : str
+       Valdation test name.
+
+    Returns
+    -------
+    length_validator_dict : dictionary
+        python dictionary containing:
+            test name: str - of test name for output dict
+            error: str - error message
+            non_matching_vals: List - any values in non agreement
+
+    """
+    lat_dtype_check = str(df['lat'].dtype) == 'float64'
+    lat_max_check = (df['lat'] > 90.0).any()
+    lat_min_check = (df['lat'] < -90).any()
+
+    non_matching_vals = ''
+    msg = ''
+    if lat_dtype_check == False:
+        msg += '  Latitude values are not all floats, perhaps the lats are not in decimal degrees.  '
+    elif lat_max_check == True:
+        msg += '  One or more latitude values are larger than 90. This exceeds the decimal latitude range.  '
+    elif lat_min_check == True:
+        msg += '  One or more latitude values are lower than -90. This exceeds the decimal latitude range.  '
+
+
+    lat_format_validator_dict = {
+        "test_name": test_name,
+        "error": msg,
+        "non_matching_vals": non_matching_vals
+        }
+
+    return lat_format_validator_dict
+
+def lon_format_validator(df, col,test_name):
+    """Validates a lon format for an input column. Test function is named: test_lon_format_validator() in test_valcmap.py.
+
+    Parameters
+    ----------
+    df : pandas dataframe
+       Pandas dataframe containing column to be lon format validated.
+    col : str
+       Name of pandas dataframe column to validate.
+    test_name : str
+       Valdation test name.
+
+    Returns
+    -------
+    length_validator_dict : dictionary
+        python dictionary containing:
+            test name: str - of test name for output dict
+            error: str - error message
+            non_matching_vals: List - any values in non agreement
+
+    """
+    lon_dtype_check = str(df['lon'].dtype) == 'float64'
+    lon_max_check = (df['lon'] > 180.0).any()
+    lon_min_check = (df['lon'] < -180).any()
+
+    non_matching_vals = ''
+    msg = ''
+    if lon_dtype_check == False:
+        msg += '  Longitude values are not all floats, perhaps the lons are not in decimal degrees.  '
+    elif lon_max_check == True:
+        msg += '  One or more longitude values are larger than 90. This exceeds the decimal longitude range.  '
+    elif lon_min_check == True:
+        msg += '  One or more longitude values are lower than -90. This exceeds the decimal longitude range.  '
+
+
+    lon_format_validator_dict = {
+        "test_name": test_name,
+        "error": msg,
+        "non_matching_vals": non_matching_vals
+        }
+
+    return lon_format_validator_dict
+
+def depth_format_validator(df, col,test_name):
+    """Validates a depth format for an input column. Test function is named: test_depth_format_validator() in test_valcmap.py.
+
+    Parameters
+    ----------
+    df : pandas dataframe
+       Pandas dataframe containing column to be depth format validated.
+    col : str
+       Name of pandas dataframe column to validate.
+    test_name : str
+       Valdation test name.
+
+    Returns
+    -------
+    length_validator_dict : dictionary
+        python dictionary containing:
+            test name: str - of test name for output dict
+            error: str - error message
+            non_matching_vals: List - any values in non agreement
+
+    """
+    depth_dtype_check = str(df['depth'].dtype) == 'float64' or str(df['depth'].dtype) == 'int64'
+    depth_sign_check = (df['depth'] >= 0).any()
+    depth_max_physical_check = (df['depth'] < 11000.0).any() #depth of Mariana Trench
+
+    non_matching_vals = ''
+    msg = ''
+    if depth_dtype_check == False:
+        msg += '  depth values are not all floats or ints, perhaps the depths have invalid formatting.  '
+    elif depth_sign_check == True:
+        msg += '  One or more depth values are less than 0. Depth values are a positive # in meters. '
+    elif depth_max_physical_check == True:
+        msg += '  One or more depth values are larger than 11000. Did you find somewhere deeper than the Mariana Trench? If not, are your depth values formatted in meters?  '
+
+
+    depth_format_validator_dict = {
+        "test_name": test_name,
+        "error": msg,
+        "non_matching_vals": non_matching_vals
+        }
+
+    return depth_format_validator_dict
+
 def climatology_bool_validator(df, col, test_name):
     """Validates the climatology column to check for 1 or null. Test function is named: test_climatology_bool_validator() in test_valcmap.py.
 
@@ -233,7 +362,6 @@ def climatology_bool_validator(df, col, test_name):
         non_matching_vals = ''
     else:
         msg = 'WARNING: climatology values is not 0 or 1 (0 means dataset is not climatology product, 1 means dataset is climatology product.)'
-        # print(msg)
         non_matching_vals = str(df[col].astype(str)[0])
 
     climatology_bool_validator_dict = {
@@ -493,8 +621,7 @@ def var_discipline_validator(df, col,test_name):
     return var_discipline_validator_dict
 
 def visualize_validator(df, col,test_name):
-    #length check if missing
-    #bool like validator 0 or 1
+
     """Validates the visualize column to see if the value is 0,1 or null. Test function is named: test_visualize_validator() in test_valcmap.py.
 
     Parameters
@@ -543,14 +670,89 @@ def visualize_validator(df, col,test_name):
 ##############################################################
 
 
+"""
+-Does header contain minimum, time,lat,lon columns. if contains depth..
+-Do columns that != time,lat,lon,depth match vars_metadata_columns?
+-Are columns in time, lat, lon...depth .
+    ie,
+        if column_list contains depth:
+            mask column list expected w/ column list[0:4]
+        else:
+            column list expected w/ column list[0:3]
+
+column time - time validator
+lat - check range -90,90. Are all vals float or int. (no degree bs)
+lon - check range -180,180. Are all vals float or int.
 
 
-def validate_data_time(df):
-    length_validator(df, col, length)
+Data
+Check header cols (time, lat, lon, depth?) - does depth exist. - do non, ST vars match vars_metadata variables?
+Is the order of cols in time,lat,lon,<depth>...
+Check time, lat, lon, depth formatting
+time: Format  %Y-%m-%dT%H:%M:%S,  Time-Zone:  UTC,
+Lat: Decimal (not military grid system), Unit: degree, Range: [-90, 90]
+Lon: Decimal (not military grid system), Unit: degree, Range: [-180, 180]
+Depth: Positive value, Unit: [m]
+"""
+
+def data_time(df):
+    data_time_fmt_val = time_format_validator(df, 'time', '%Y-%m-%dT%H:%M:%S','data: validate time col time format')
+    return data_time_fmt_val
+
+def data_lat(df):
+    data_lat_fmt_val = lat_format_validator(df,'lat','data: validate lat col format')
+    return data_lat_fmt_val
+
+def data_lon(df):
+    data_lon_fmt_val = lon_format_validator(df,'lon','data: validate lon col format')
+    return data_lon_fmt_val
+
+def data_depth(df):
+    data_depth_fmt_val = depth_format_validator(df,'depth','data: validate depth col format')
+    return data_depth_fmt_val
+
+
+def ds_col_validator(df_data, df_vars_metadata):
+    vm_cols = list(df_vars_metadata)
+    if 'depth' in list(df_data):
+        ds_col_val = col_name_validator(df_data, 'dataset: validate column names match var names. w/ depth',list(df_data[4:]))
+    else:
+        ds_col_val = col_name_validator(df_data, 'dataset: validate column names match var names. w/o depth',list(df_data[3:]))
+    return ds_col_val
 
 
 def validate_data(df):
-    validate_data_time()
+    #sheet wide validation
+    ds_col_val = ds_col_validator(df_data, df_vars_metadata)
+    #column specific validation
+    data_time_fmt_val = data_time(df)
+    data_lat_fmt_val = data_lat(df)
+    data_lon_fmt_val = data_lon(df)
+    data_depth_fmt_val = data_depth(df)
+    return ds_col_val, data_time_fmt_val, data_lat_fmt_val, data_lon_fmt_val, data_depth_fmt_val
+
+def validate_dataset_metadata(df):
+    #sheet wide validation
+    dataset_metadata_col_name_validator = col_name_validator(df, 'dataset metadata: validate column names',['dataset_short_name','dataset_long_name','dataset_version','dataset_release_date','dataset_make','dataset_source','dataset_distributor','dataset_acknowledgement','dataset_doi','dataset_history','dataset_description','dataset_references','climatology'])
+
+    #column specific validation
+    dataset_short_name_dict = dataset_short_name(df)
+    dataset_long_name_dict = dataset_long_name(df)
+    dataset_version_length_validator_dict = dataset_version(df)
+    dataset_release_date_length_validator_dict, dataset_release_date_time_format_validator_dict = dataset_release_date(df)
+    dataset_make_validator_dict = dataset_make(df)
+    dataset_source_valdiator_dict = dataset_source(df)
+    dataset_distributor_validator_dict = dataset_distributor(df)
+    dataset_acknowledgement_valdator_dict = dataset_acknowledgement(df)
+    dataset_DOI_validator_dict =  dataset_DOI(df)
+    dataset_history_validator_dict = dataset_history(df)
+    dataset_desciption_validator_dict = dataset_description(df)
+    dataset_references_validator_dict = dataset_references(df)
+    dataset_climatology_length_validator_dict, dataset_climatology_bool_check_validator_dict = dataset_climatology(df)
+
+    return dataset_metadata_col_name_validator,dataset_short_name_dict,dataset_long_name_dict,dataset_version_length_validator_dict,dataset_release_date_length_validator_dict, dataset_release_date_time_format_validator_dict, dataset_make_validator_dict, dataset_source_valdiator_dict, dataset_distributor_validator_dict, dataset_acknowledgement_valdator_dict, dataset_DOI_validator_dict, dataset_history_validator_dict, dataset_desciption_validator_dict, dataset_references_validator_dict, dataset_climatology_length_validator_dict, dataset_climatology_bool_check_validator_dict
+
+
 
 ##############################################################
 ###############                                ###############
