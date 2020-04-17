@@ -227,18 +227,23 @@ def lat_format_validator(df, col,test_name):
             non_matching_vals: List - any values in non agreement
 
     """
-    lat_dtype_check = str(df['lat'].dtype) == 'float64'
-    lat_max_check = (df['lat'] > 90.0).any()
-    lat_min_check = (df['lat'] < -90).any()
+    lat_dtype_check = str(df[col].dtype) == 'float64' or str(df[col].dtype) == 'int64'
+
+    if lat_dtype_check == True:
+        lat_max_check = (df[col] > 90.0).any()
+        lat_min_check = (df[col] < -90).any()
+    else:
+        lat_max_check = False
+        lat_min_check = False
 
     non_matching_vals = ''
     msg = ''
     if lat_dtype_check == False:
-        msg += '  Latitude values are not all floats, perhaps the lats are not in decimal degrees.  '
-    elif lat_max_check == True:
-        msg += '  One or more latitude values are larger than 90. This exceeds the decimal latitude range.  '
-    elif lat_min_check == True:
-        msg += '  One or more latitude values are lower than -90. This exceeds the decimal latitude range.  '
+        msg += ' Latitude values are not all floats, perhaps the lats are not in decimal degrees.'
+    if lat_max_check == True:
+        msg += ' One or more latitude values are larger than 90. This exceeds the decimal latitude range.'
+    if lat_min_check == True:
+        msg += ' One or more latitude values are lower than -90. This exceeds the decimal latitude range.'
 
 
     lat_format_validator_dict = {
@@ -270,17 +275,22 @@ def lon_format_validator(df, col,test_name):
             non_matching_vals: List - any values in non agreement
 
     """
-    lon_dtype_check = str(df['lon'].dtype) == 'float64'
-    lon_max_check = (df['lon'] > 180.0).any()
-    lon_min_check = (df['lon'] < -180).any()
+    lon_dtype_check = str(df[col].dtype) == 'float64' or str(df[col].dtype) == 'int64'
+    if lon_dtype_check == True:
+        lon_max_check = (df[col] > 180.0).any()
+        lon_min_check = (df[col] < -180).any()
+
+    else:
+        lon_max_check = False
+        lon_min_check = False
 
     non_matching_vals = ''
     msg = ''
     if lon_dtype_check == False:
         msg += '  Longitude values are not all floats, perhaps the lons are not in decimal degrees.  '
-    elif lon_max_check == True:
+    if lon_max_check == True:
         msg += '  One or more longitude values are larger than 90. This exceeds the decimal longitude range.  '
-    elif lon_min_check == True:
+    if lon_min_check == True:
         msg += '  One or more longitude values are lower than -90. This exceeds the decimal longitude range.  '
 
 
@@ -313,18 +323,23 @@ def depth_format_validator(df, col,test_name):
             non_matching_vals: List - any values in non agreement
 
     """
-    depth_dtype_check = str(df['depth'].dtype) == 'float64' or str(df['depth'].dtype) == 'int64'
-    depth_sign_check = (df['depth'] >= 0).any()
-    depth_max_physical_check = (df['depth'] < 11000.0).any() #depth of Mariana Trench
+    depth_dtype_check = str(df[col].dtype) == 'float64' or str(df[col].dtype) == 'int64'
+
+    if depth_dtype_check == True:
+        depth_sign_check = (df[col] >= 0).any()
+        depth_max_physical_check = (df[col] < 11000.0).any() #depth of Mariana Trench
+    else:
+        depth_sign_check = False
+        depth_max_physical_check = False
 
     non_matching_vals = ''
     msg = ''
     if depth_dtype_check == False:
-        msg += '  depth values are not all floats or ints, perhaps the depths have invalid formatting.  '
-    elif depth_sign_check == True:
-        msg += '  One or more depth values are less than 0. Depth values are a positive # in meters. '
-    elif depth_max_physical_check == True:
-        msg += '  One or more depth values are larger than 11000. Did you find somewhere deeper than the Mariana Trench? If not, are your depth values formatted in meters?  '
+        msg += ' Depth values are not all floats or ints, perhaps the depths have invalid formatting.'
+    if depth_sign_check == True:
+        msg += ' One or more depth values are less than 0. Depth values are a positive # in meters.'
+    if depth_max_physical_check == True:
+        msg += ' One or more depth values are larger than 11000. Did you find somewhere deeper than the Mariana Trench? If not, are your depth values formatted in meters?'
 
 
     depth_format_validator_dict = {

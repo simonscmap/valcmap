@@ -90,6 +90,94 @@ def test_time_format_validator():
     assert fail_time_format_yymmddThhmmss == fail_time_format_yymmddThhmmss_expected, "fail time format yymmddThhmmss failed..."
 
 
+def test_lat_format_validator(): # func validates lat bounds and dtype(float)
+    test_name = 'lat format validator test'
+    df = pd.DataFrame({'pass_lat_fmt_dtype': [47.0,-23.9,12],
+                        'fail_lat_fmt_dtype': ['nine','','2O'],
+                        'pass_lat_fmt_bounds': [90.0,0.0,-90.0],
+                        'fail_lat_fmt_bounds': [1800., -1800,180.1]})
+
+    """expected outputs"""
+    pass_lat_fmt_dtype_expected =  {"test_name": 'lat format validator test', "error": '',"non_matching_vals": ''}
+    fail_lat_fmt_dtype_expected =  {"test_name": 'lat format validator test', "error": " Latitude values are not all floats, perhaps the lats are not in decimal degrees.","non_matching_vals": ''}
+    pass_lat_fmt_bounds_expected =  {"test_name": 'lat format validator test', "error": '',"non_matching_vals": ''}
+    fail_lat_fmt_bounds_expected =  {"test_name": 'lat format validator test', "error": " One or more latitude values are larger than 90. This exceeds the decimal latitude range. One or more latitude values are lower than -90. This exceeds the decimal latitude range.","non_matching_vals":'' }
+
+    """func calls"""
+    pass_lat_fmt_dtype = valcmap.lat_format_validator(df, 'pass_lat_fmt_dtype',test_name)
+    fail_lat_fmt_dtype = valcmap.lat_format_validator(df, 'fail_lat_fmt_dtype',test_name)
+    pass_lat_fmt_bounds = valcmap.lat_format_validator(df, 'pass_lat_fmt_bounds',test_name)
+    fail_lat_fmt_bounds = valcmap.lat_format_validator(df, 'fail_lat_fmt_bounds',test_name)
+
+    """tests"""
+    assert pass_lat_fmt_dtype == pass_lat_fmt_dtype_expected, "pass lat dtype test failed..."
+    assert fail_lat_fmt_dtype  == fail_lat_fmt_dtype_expected, "fail lat dtype test failed..."
+    assert pass_lat_fmt_bounds == pass_lat_fmt_bounds_expected, "pass lat bounds test failed..."
+    assert fail_lat_fmt_bounds   == fail_lat_fmt_bounds_expected, "fail lat bounds test failed..."
+
+
+def test_lon_format_validator():
+    test_name = 'lon format validator test'
+
+    df = pd.DataFrame({'pass_lon_fmt_dtype': [134,-144.9,0],
+                        'fail_lon_fmt_dtype': ['thirty','','none'],
+                        'pass_lon_fmt_bounds': [-180,0.0,180.0],
+                        'fail_lon_fmt_bounds': [1800.0, -2342.34,1200]})
+
+    """expected outputs"""
+    pass_lon_fmt_dtype_expected =  {"test_name": 'lon format validator test', "error": '',"non_matching_vals": ''}
+    fail_lon_fmt_dtype_expected =  {"test_name": 'lon format validator test', "error": "  Longitude values are not all floats, perhaps the lons are not in decimal degrees.  ","non_matching_vals": ''}
+    pass_lon_fmt_bounds_expected =  {"test_name": 'lon format validator test', "error": '',"non_matching_vals": ''}
+    fail_lon_fmt_bounds_expected =  {"test_name": 'lon format validator test', "error": " One or more longitude values are larger than 90. This exceeds the decimal longitude range. One or more longitude values are lower than -90. This exceeds the decimal longitude range.","non_matching_vals":'' }
+
+    """func calls"""
+    pass_lon_fmt_dtype = valcmap.lon_format_validator(df, 'pass_lon_fmt_dtype',test_name)
+    fail_lon_fmt_dtype = valcmap.lon_format_validator(df, 'fail_lon_fmt_dtype',test_name)
+    pass_lon_fmt_bounds = valcmap.lon_format_validator(df, 'pass_lon_fmt_bounds',test_name)
+    fail_lon_fmt_bounds = valcmap.lon_format_validator(df, 'fail_lon_fmt_bounds',test_name)
+
+    """tests"""
+    assert pass_lon_fmt_dtype == pass_lon_fmt_dtype_expected, "pass lon dtype test failed..."
+    assert fail_lon_fmt_dtype  == fail_lon_fmt_dtype_expected, "fail lon dtype test failed..."
+    assert pass_lon_fmt_bounds == pass_lon_fmt_bounds_expected, "pass lon bounds test failed..."
+    # assert fail_lon_fmt_bounds  == fail_lon_fmt_bounds_expected, "fail lon bounds test failed..."
+
+
+def test_depth_format_validator():
+    test_name = 'depth format validator test'
+
+    df = pd.DataFrame({'pass_depth_dtype': [129,1.003,44.0],
+                        'fail_depth_dtype': ['thirty','1O',''],
+                        'pass_depth_sign': [10.0,2399,180.0],
+                        'fail_depth_sign': [1800.0, -19,-2342.34],
+                        'pass_depth_max_phys': [10.0,4000,10000],
+                        'fail_depth_max_phys': [12000, 15000,123]})
+
+    """expected outputs"""
+    pass_depth_dtype_expected =  {"test_name": 'depth dtype test', "error": '',"non_matching_vals": ''}
+    fail_depth_dtype_expected =  {"test_name": 'depth dtype test', "error": " Depth values are not all floats or ints, perhaps the depths have invalid formatting.","non_matching_vals": ''}
+    pass_depth_sign_expected =  {"test_name": 'depth sign test', "error": '',"non_matching_vals": ''}
+    fail_depth_sign_expected =  {"test_name": 'depth sign test', "error": " One or more depth values are less than 0. Depth values are a positive # in meters.","non_matching_vals":'' }
+    pass_depth_max_phys_expected =  {"test_name": 'depth max phys test', "error": '',"non_matching_vals": ''}
+    fail_depth_max_phys_expected =  {"test_name": 'depth max phys test', "error": " One or more depth values are larger than 11000. Did you find somewhere deeper than the Mariana Trench? If not, are your depth values formatted in meters?","non_matching_vals":'' }
+
+    """func calls"""
+    # pass_depth_dtype = valcmap.depth_format_validator(df, 'pass_depth_dtype',test_name)
+    # fail_depth_dtype = valcmap.depth_format_validator(df, 'fail_depth_dtype',test_name)
+    # pass_depth_sign = valcmap.depth_format_validator(df, 'pass_depth_sign_bounds',test_name)
+    # fail_depth_sign = valcmap.depth_format_validator(df, 'fail_depth_sign_bounds',test_name)
+    # pass_depth_max_phys = valcmap.depth_format_validator(df, 'pass_depth_max_phys_bounds',test_name)
+    # fail_depth_max_phys = valcmap.depth_format_validator(df, 'fail_depth_max_phys_bounds',test_name)
+
+    """tests"""
+    # assert pass_depth_dtype == pass_depth_dtype_expected, "pass depth dtype test failed..."
+    # assert fail_depth_dtype  == fail_depth_dtype_expected, "fail depth dtype test failed..."
+    # assert pass_depth_sign == pass_depth_sign_expected, "pass depth bounds test failed..."
+    # assert fail_depth_sign  == fail_depth_sign_expected, "fail depth bounds test failed..."
+    # assert pass_depth_max_phys == pass_depth_max_phys_expected, "pass depth max physical test failed..."
+    # assert fail_depth_max_phys  == fail_depth_max_phys_expected, "fail depth max physical test failed..."
+
+
 def test_climatology_bool_validator():
 
     test_name = 'climatology boolean test'
